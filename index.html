@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>BLACKOUT / OS</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;700;900&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg:#050505;
+  --panel:#0c0c0c;
+  --border:#1f1f1f;
+  --text:#f2f2f2;
+  --muted:#8a8a8a;
+  --red:#ff1e1e;
+  --cyan:#00f5ff;
+  --green:#00ff9c;
+}
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  line-height:1.6;
+  overflow-x:hidden;
+  cursor:none;
+}
+
+/* GRID */
+.architectural-grid{
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,0.065) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.065) 1px, transparent 1px);
+  background-size:72px 72px;
+  opacity:.55;
+  mix-blend-mode:screen;
+  pointer-events:none;
+  z-index:2;
+}
+
+/* CURSOR GLOW */
+.cursor-glow{
+  position:fixed;
+  width:300px;
+  height:300px;
+  border-radius:50%;
+  background:radial-gradient(circle,
+    rgba(0,245,255,.25),
+    rgba(0,245,255,.12),
+    transparent 70%);
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  mix-blend-mode:screen;
+  z-index:6;
+}
+
+/* PIXEL HAND CURSOR */
+.os-cursor{
+  position:fixed;
+  width:6px;height:6px;
+  background:var(--cyan);
+  transform:translate(-50%,-50%);
+  pointer-events:none;
+  z-index:30;
+  image-rendering:pixelated;
+  box-shadow:
+    6px 0 var(--cyan),
+    12px 0 var(--cyan),
+    0 6px var(--cyan),
+    6px 6px var(--cyan),
+    12px 6px var(--cyan),
+    0 12px var(--cyan),
+    6px 12px var(--cyan),
+    0 18px var(--cyan),
+    0 24px var(--cyan);
+  filter:drop-shadow(0 0 6px rgba(0,245,255,.9));
+  mix-blend-mode:screen;
+  transition:transform .08s ease,filter .12s ease;
+}
+
+/* OVERLAYS */
+.scanlines{position:fixed;inset:0;background:repeating-linear-gradient(
+to bottom,rgba(255,255,255,.03),rgba(255,255,255,.03) 1px,
+transparent 1px,transparent 3px);opacity:.12;pointer-events:none;z-index:4}
+.vignette{position:fixed;inset:0;box-shadow:inset 0 0 220px rgba(0,0,0,.95);pointer-events:none;z-index:3}
+.noise{position:fixed;inset:0;background:repeating-radial-gradient(circle,#fff 0 1px,transparent 1px 100%);opacity:.015;pointer-events:none;z-index:5}
+
+/* NAV */
+header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:1.5rem 6vw;
+  border-bottom:1px solid var(--border);
+}
+.logo{font-weight:900}
+.logo span{color:var(--red)}
+.nav-links a{
+  margin-left:2rem;
+  font-size:.85rem;
+  color:var(--muted);
+  text-decoration:none;
+}
+.btn{
+  border:1px solid var(--red);
+  padding:.5rem 1rem;
+  color:var(--red);
+}
+
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;gap:6px;cursor:pointer}
+.hamburger span{width:26px;height:2px;background:var(--text)}
+
+/* HERO */
+.hero{
+  min-height:100vh;
+  display:grid;
+  grid-template-columns:1.1fr .9fr;
+  gap:4rem;
+  padding:8rem 6vw;
+}
+.hero h1{
+  font-size:clamp(3.5rem,7vw,6.5rem);
+  line-height:.95;
+  font-weight:900;
+}
+.hero h1 span{color:var(--red)}
+.hero p{margin:2rem 0;max-width:520px;color:var(--muted)}
+.primary{
+  background:var(--red);
+  color:#000;
+  border:none;
+  padding:1rem 2.5rem;
+  font-weight:600;
+}
+
+/* MODULES */
+.hero-right{display:grid;gap:1.5rem}
+.module{
+  background:linear-gradient(145deg,#0c0c0c,#070707);
+  border:1px solid var(--border);
+  padding:2rem;
+  position:relative;
+}
+.module::before{
+  content:"";
+  position:absolute;
+  top:0;left:0;
+  height:2px;width:100%;
+  background:var(--cyan);
+}
+.label{font-size:.75rem;color:var(--muted)}
+.green{color:var(--green)}
+.red{color:var(--red)}
+
+/* STATS */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  padding:4rem 6vw;
+  border-top:1px solid var(--border);
+}
+.stats h2{font-size:3rem;color:var(--cyan)}
+
+/* SYSTEM */
+.system{padding:6rem 6vw}
+.system-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:2rem;
+}
+.card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  padding:2rem;
+}
+
+/* FOOTER */
+footer{
+  border-top:1px solid var(--border);
+  padding:2rem;
+  text-align:center;
+  color:var(--muted);
+}
+
+/* MODAL */
+.os-modal{position:fixed;inset:0;display:none;z-index:50}
+.os-modal.active{display:block}
+.os-modal-backdrop{
+  position:absolute;inset:0;
+  background:rgba(0,0,0,.85);
+  backdrop-filter:blur(4px);
+}
+.os-modal-panel{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%);
+  width:min(520px,90vw);
+  background:linear-gradient(145deg,#0c0c0c,#060606);
+  border:1px solid var(--border);
+  box-shadow:0 0 40px rgba(0,245,255,.25);
+}
+.os-modal-header{
+  display:flex;
+  justify-content:space-between;
+  padding:1.2rem 1.5rem;
+  border-bottom:1px solid var(--border);
+}
+.os-modal-header h4{color:var(--cyan)}
+.os-close{background:none;border:none;color:var(--red);font-size:1.2rem}
+.os-modal-body{padding:1.5rem;color:var(--muted)}
+.nav-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 15;
+}
+
+.nav-backdrop.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* MOBILE */
+@media(max-width:900px){
+  .hamburger{display:flex}
+  .nav-links{
+    position:fixed;
+    inset:0; z-index: 20;
+    background:var(--bg);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    transform:translateY(-100%);
+    transition:.4s;
+    z-index:20;
+  }
+  .nav-links.active{transform:translateY(0)}
+  .hero{grid-template-columns:1fr}
+  .stats,.system-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="architectural-grid" id="archGrid"></div>
+<div class="cursor-glow" id="cursorGlow"></div>
+<div class="os-cursor" id="osCursor"></div>
+
+<div class="scanlines"></div>
+<div class="vignette"></div>
+<div class="noise"></div>
+
+<header>
+  <div class="logo">BLACKOUT<span>/OS</span></div>
+
+  <nav class="nav-links">
+    <a href="#" data-modal="system">System</a>
+    <a href="#" data-modal="threats">Threats</a>
+    <a href="#" data-modal="control">Control</a>
+    <a href="#" class="btn" data-modal="access">Request Access</a>
+  </nav>
+
+  <div class="hamburger" id="hamburger">
+    <span></span><span></span><span></span>
+  </div>
+</header>
+
+<section class="hero">
+  <div>
+    <h1>BLACKOUT<br>CONTROL<br><span>INTERFACE</span></h1>
+    <p>Classified digital control layer for detection, isolation and response.</p>
+    <button class="primary" data-modal="enter">ENTER SYSTEM</button>
+  </div>
+
+  <div class="hero-right">
+    <div class="module" data-modal="core">
+      <span class="label">CORE STATUS</span><br>
+      <strong class="green">STABLE</strong>
+    </div>
+    <div class="module" data-modal="threats">
+      <span class="label">ACTIVE THREATS</span><br>
+      <strong id="threatCount">1,248</strong>
+    </div>
+    <div class="module" data-modal="security">
+      <span class="label">SECURITY LEVEL</span><br>
+      <strong class="red">MAXIMUM</strong>
+    </div>
+  </div>
+</section>
+
+<section class="stats">
+  <div><h2 id="servers">320</h2><span>Servers Protected</span></div>
+  <div><h2>99.99%</h2><span>Integrity</span></div>
+  <div><h2>24/7</h2><span>Monitoring</span></div>
+</section>
+
+<section class="system">
+  <h3>SYSTEM MODULES</h3>
+  <div class="system-grid">
+    <div class="card" data-modal="detect">Threat Detection</div>
+    <div class="card" data-modal="encrypt">Encryption Layer</div>
+    <div class="card" data-modal="shield">Infrastructure Shield</div>
+  </div>
+</section>
+
+<footer>BLACKOUT / OS — Classified Interface</footer>
+
+<!-- MODAL -->
+<div class="os-modal" id="osModal">
+  <div class="os-modal-backdrop"></div>
+  <div class="os-modal-panel">
+    <div class="os-modal-header">
+      <h4 id="modalTitle">SYSTEM</h4>
+      <button class="os-close" id="closeModal">✕</button>
+    </div>
+    <div class="os-modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+/* HAMBURGER */
+const hamburger = document.getElementById("hamburger");
+const navLinks = document.querySelector(".nav-links");
+const navBackdrop = document.getElementById("navBackdrop");
+
+// Toggle menu
+hamburger.addEventListener("click", () => {
+  navLinks.classList.toggle("active");
+  navBackdrop.classList.toggle("active");
+});
+
+// Close when clicking backdrop
+navBackdrop.addEventListener("click", closeNav);
+
+// Close when clicking a nav link
+navLinks.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", closeNav);
+});
+
+function closeNav() {
+  navLinks.classList.remove("active");
+  navBackdrop.classList.remove("active");
+}
+
+/* CURSOR */
+let mx=0,my=0,cx=0,cy=0
+document.onmousemove=e=>{
+  mx=e.clientX;my=e.clientY
+  cursorGlow.style.left=mx+'px'
+  cursorGlow.style.top=my+'px'
+}
+;(function animate(){
+  cx+=(mx-cx)*.35;cy+=(my-cy)*.35
+  osCursor.style.left=cx+'px'
+  osCursor.style.top=cy+'px'
+  archGrid.style.opacity=.55+.35*Math.sin(mx/window.innerWidth*Math.PI)*Math.sin(my/window.innerHeight*Math.PI)
+  requestAnimationFrame(animate)
+})()
+
+/* MODALS */
+const modalData={
+  system:["SYSTEM OVERVIEW","BLACKOUT / OS monitors, isolates and neutralizes hostile processes."],
+  threats:["ACTIVE THREATS","Multiple hostile entities detected across nodes."],
+  control:["CONTROL PANEL","Manual override and system lockdown tools."],
+  access:["ACCESS REQUEST","Clearance Level 7 required."],
+  enter:["SYSTEM ENTRY","All actions are logged and monitored."],
+  core:["CORE STATUS","Primary core operating at 99.99% integrity."],
+  security:["SECURITY LEVEL","Global lockdown enabled."],
+  detect:["THREAT DETECTION","Autonomous AI threat analysis active."],
+  encrypt:["ENCRYPTION","Adaptive zero-trust encryption layer."],
+  shield:["INFRASTRUCTURE SHIELD","Distributed protection across regions."]
+}
+
+document.querySelectorAll('[data-modal]').forEach(el=>{
+  el.onclick=e=>{
+    e.preventDefault()
+    const d=modalData[el.dataset.modal]
+    if(!d)return
+    modalTitle.textContent=d[0]
+    modalBody.textContent=d[1]
+    osModal.classList.add('active')
+  }
+})
+
+closeModal.onclick=()=>osModal.classList.remove('active')
+document.querySelector('.os-modal-backdrop').onclick=()=>osModal.classList.remove('active')
+</script>
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+</body>
+</html>
