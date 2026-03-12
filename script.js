@@ -1,170 +1,182 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-// Hamburger
-const hamburger = document.getElementById("hamburger");
-const navLinks = document.querySelector(".nav-links");
+  /* NAVIGATION */
+  const hamburger = document.getElementById("hamburger");
+  const navLinks = document.querySelector(".nav-links");
+  const navBackdrop = document.getElementById("navBackdrop");
 
-hamburger.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
-});
-
-// Cursor Glow
-const glow = document.getElementById("cursorGlow");
-const osCursor = document.getElementById("osCursor");
-const archGrid = document.getElementById("archGrid");
-
-let mouseX = 0, mouseY = 0;
-let cursorX = 0, cursorY = 0;
-
-document.addEventListener("mousemove", (e) => {
-  mouseX = e.clientX;
-  mouseY = e.clientY;
-
-  glow.style.left = mouseX + "px";
-  glow.style.top = mouseY + "px";
-});
-
-function animateCursor() {
-  cursorX += (mouseX - cursorX) * 0.35;
-  cursorY += (mouseY - cursorY) * 0.35;
-
-  osCursor.style.left = cursorX + "px";
-  osCursor.style.top = cursorY + "px";
-
-  requestAnimationFrame(animateCursor);
-}
-
-animateCursor();
-
-
-// Grid reacts to cursor
-const archGrid = document.getElementById("archGrid");
-document.addEventListener("mousemove", (e) => {
-  const x = e.clientX / window.innerWidth;
-  const y = e.clientY / window.innerHeight;
-  archGrid.style.opacity = 0.35 + 0.25 * Math.sin(x * Math.PI) * Math.sin(y * Math.PI);
-});
-document.addEventListener("mousedown", () => {
-  osCursor.style.transform = "translate(-50%, -50%) scale(0.85)";
-  osCursor.style.filter = "drop-shadow(0 0 10px rgba(255,30,30,1))";
-});
-
-document.addEventListener("mouseup", () => {
-  osCursor.style.transform = "translate(-50%, -50%) scale(1)";
-  osCursor.style.filter = "drop-shadow(0 0 6px rgba(0,245,255,0.8))";
-});
-
-// Threats / Servers Counter
-let threats = 1248;
-let servers = 320;
-const threatEl = document.getElementById("threats");
-const serverEl = document.getElementById("servers");
-setInterval(() => {
-  threats += Math.floor(Math.random() * 3);
-  servers += Math.random() > 0.97 ? 1 : 0;
-  threatEl.textContent = threats.toLocaleString();
-  serverEl.textContent = servers.toLocaleString();
-}, 1400);
-document.querySelectorAll("a, button").forEach(el => {
-  el.addEventListener("mouseenter", () => {
-    osCursor.style.filter = "drop-shadow(0 0 12px rgba(0,255,156,1))";
-    osCursor.style.transform = "translate(-50%, -50%) scale(1.2)";
-  });
-
-  el.addEventListener("mouseleave", () => {
-    osCursor.style.filter = "drop-shadow(0 0 6px rgba(0,245,255,0.8))";
-    osCursor.style.transform = "translate(-50%, -50%) scale(1)";
-  });
-});const modal = document.getElementById("osModal");
-const modalTitle = document.getElementById("modalTitle");
-const modalBody = document.getElementById("modalBody");
-const closeModal = document.getElementById("closeModal");
-
-const modalContent = {
-  system: {
-    title: "SYSTEM OVERVIEW",
-    body: `
-      BLACKOUT / OS is a classified digital control interface
-      designed for threat detection, isolation, and response.
-      <br><br>
-      <strong>Status:</strong> Operational<br>
-      <strong>Clearance:</strong> Level 7 Required
-    `
-  },
-
-  threats: {
-    title: "ACTIVE THREATS",
-    body: `
-      Multiple hostile processes detected across distributed nodes.
-      <br><br>
-      <strong>Current Level:</strong> MAXIMUM<br>
-      <strong>Auto-Neutralization:</strong> ENABLED
-    `
-  },
-
-  control: {
-    title: "CONTROL PANEL",
-    body: `
-      Manual system override interface.
-      <br><br>
-      Authorized operators may initiate lockdown,
-      isolate nodes, or deploy countermeasures.
-    `
-  },
-
-  enter: {
-    title: "ACCESS REQUEST",
-    body: `
-      You are attempting to enter a restricted system layer.
-      <br><br>
-      All actions are monitored and logged.
-      <br><br>
-      <span class="red">Proceed with caution.</span>
-    `
-  },
-
-  core: {
-    title: "CORE STATUS",
-    body: `
-      Primary core is running within safe operational parameters.
-      <br><br>
-      <strong>Load:</strong> 42%<br>
-      <strong>Integrity:</strong> 99.99%
-    `
+  if (hamburger) {
+    hamburger.addEventListener("click", () => {
+      navLinks.classList.toggle("active");
+      if (navBackdrop) navBackdrop.classList.toggle("active");
+    });
   }
-};
 
-// OPEN MODAL
-document.querySelectorAll("[data-modal]").forEach(el => {
-  el.addEventListener("click", (e) => {
-    e.preventDefault();
-
-    const key = el.dataset.modal;
-    const data = modalContent[key];
-
-    if (!data) return;
-
-    modalTitle.textContent = data.title;
-    modalBody.innerHTML = data.body;
-    modal.classList.add("active");
-  });
-});
-
-// CLOSE MODAL
-closeModal.addEventListener("click", () => {
-  modal.classList.remove("active");
-});
-
-modal.querySelector(".os-modal-backdrop")
-  .addEventListener("click", () => {
-    modal.classList.remove("active");
-  });
-
-// ESC KEY CLOSE
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") {
-    modal.classList.remove("active");
+  function closeNav() {
+    navLinks.classList.remove("active");
+    if (navBackdrop) navBackdrop.classList.remove("active");
   }
+
+  if (navBackdrop) navBackdrop.addEventListener("click", closeNav);
+
+  navLinks.querySelectorAll("a").forEach(link => {
+    link.addEventListener("click", closeNav);
+  });
+
+
+  /* CUSTOM CURSOR SYSTEM */
+  const glow = document.getElementById("cursorGlow");
+  const osCursor = document.getElementById("osCursor");
+  const archGrid = document.getElementById("archGrid");
+
+  let mouseX = 0;
+  let mouseY = 0;
+
+  let cursorX = 0;
+  let cursorY = 0;
+
+  let scale = 1;
+
+  document.addEventListener("mousemove", (e) => {
+
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+
+    if (glow) {
+      glow.style.left = mouseX + "px";
+      glow.style.top = mouseY + "px";
+    }
+
+    if (archGrid) {
+      const x = mouseX / window.innerWidth;
+      const y = mouseY / window.innerHeight;
+
+      archGrid.style.opacity =
+        0.55 + 0.25 * Math.sin(x * Math.PI) * Math.sin(y * Math.PI);
+    }
+  });
+
+
+  function animateCursor() {
+
+    cursorX += (mouseX - cursorX) * 0.35;
+    cursorY += (mouseY - cursorY) * 0.35;
+
+    if (osCursor) {
+      osCursor.style.transform =
+        `translate(${cursorX}px, ${cursorY}px) translate(-50%, -50%) scale(${scale})`;
+    }
+
+    requestAnimationFrame(animateCursor);
+  }
+
+  animateCursor();
+
+
+  /* CLICK EFFECT */
+  document.addEventListener("mousedown", () => {
+    scale = 0.85;
+    if (osCursor)
+      osCursor.style.filter = "drop-shadow(0 0 10px rgba(255,30,30,1))";
+  });
+
+  document.addEventListener("mouseup", () => {
+    scale = 1;
+    if (osCursor)
+      osCursor.style.filter = "drop-shadow(0 0 6px rgba(0,245,255,0.8))";
+  });
+
+
+  /* HOVER EFFECT */
+  document.querySelectorAll("a, button").forEach(el => {
+
+    el.addEventListener("mouseenter", () => {
+      scale = 1.2;
+      if (osCursor)
+        osCursor.style.filter = "drop-shadow(0 0 12px rgba(0,255,156,1))";
+    });
+
+    el.addEventListener("mouseleave", () => {
+      scale = 1;
+      if (osCursor)
+        osCursor.style.filter = "drop-shadow(0 0 6px rgba(0,245,255,0.8))";
+    });
+
+  });
+
+
+  /* COUNTERS */
+  let threats = 1248;
+  let servers = 320;
+
+  const threatEl = document.getElementById("threatCount");
+  const serverEl = document.getElementById("servers");
+
+  setInterval(() => {
+
+    threats += Math.floor(Math.random() * 3);
+    servers += Math.random() > 0.97 ? 1 : 0;
+
+    if (threatEl) threatEl.textContent = threats.toLocaleString();
+    if (serverEl) serverEl.textContent = servers.toLocaleString();
+
+  }, 1400);
+
+
+  /* MODAL SYSTEM */
+  const modal = document.getElementById("osModal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalBody = document.getElementById("modalBody");
+  const closeModal = document.getElementById("closeModal");
+
+  const modalContent = {
+    system: {
+      title: "SYSTEM OVERVIEW",
+      body: "BLACKOUT / OS monitors, isolates and neutralizes hostile processes."
+    },
+    threats: {
+      title: "ACTIVE THREATS",
+      body: "Multiple hostile processes detected across nodes."
+    },
+    control: {
+      title: "CONTROL PANEL",
+      body: "Manual override and system lockdown tools."
+    },
+    enter: {
+      title: "SYSTEM ENTRY",
+      body: "All actions are logged and monitored."
+    },
+    core: {
+      title: "CORE STATUS",
+      body: "Primary core operating at 99.99% integrity."
+    }
+  };
+
+  document.querySelectorAll("[data-modal]").forEach(el => {
+
+    el.addEventListener("click", (e) => {
+
+      e.preventDefault();
+
+      const key = el.dataset.modal;
+      const data = modalContent[key];
+
+      if (!data) return;
+
+      modalTitle.textContent = data.title;
+      modalBody.innerHTML = data.body;
+
+      modal.classList.add("active");
+
+    });
+
+  });
+
+  if (closeModal)
+    closeModal.addEventListener("click", () => modal.classList.remove("active"));
+
+  if (modal)
+    modal.querySelector(".os-modal-backdrop")
+      .addEventListener("click", () => modal.classList.remove("active"));
+
 });
-
-
