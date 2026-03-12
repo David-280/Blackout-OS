@@ -1,17 +1,17 @@
+document.addEventListener("DOMContentLoaded", () => {
+
 // Hamburger
 const hamburger = document.getElementById("hamburger");
 const navLinks = document.querySelector(".nav-links");
+
 hamburger.addEventListener("click", () => {
   navLinks.classList.toggle("active");
 });
 
 // Cursor Glow
 const glow = document.getElementById("cursorGlow");
-document.addEventListener("mousemove", (e) => {
-  glow.style.left = e.clientX + "px";
-  glow.style.top = e.clientY + "px";
-});
 const osCursor = document.getElementById("osCursor");
+const archGrid = document.getElementById("archGrid");
 
 let mouseX = 0, mouseY = 0;
 let cursorX = 0, cursorY = 0;
@@ -19,6 +19,9 @@ let cursorX = 0, cursorY = 0;
 document.addEventListener("mousemove", (e) => {
   mouseX = e.clientX;
   mouseY = e.clientY;
+
+  glow.style.left = mouseX + "px";
+  glow.style.top = mouseY + "px";
 });
 
 function animateCursor() {
@@ -163,4 +166,5 @@ document.addEventListener("keydown", (e) => {
     modal.classList.remove("active");
   }
 });
+
 
