@@ -353,37 +353,7 @@ navLinks.querySelectorAll("a").forEach(link => {
 function closeNav() {
   navLinks.classList.remove("active");
   navBackdrop.classList.remove("active");
-}
-
-/* CURSOR */
-const cursorGlow = document.getElementById("cursorGlow");
-const osCursor = document.getElementById("osCursor");
-const archGrid = document.getElementById("archGrid");
-
-let mx = 0, my = 0, cx = 0, cy = 0;
-
-document.onmousemove = e => {
-  mx = e.clientX;
-  my = e.clientY;
-
-  cursorGlow.style.left = mx + 'px';
-  cursorGlow.style.top = my + 'px';
-};
-
-(function animate(){
-  cx += (mx - cx) * .35;
-  cy += (my - cy) * .35;
-
-  osCursor.style.left = cx + 'px';
-  osCursor.style.top = cy + 'px';
-
-  archGrid.style.opacity =
-    .55 + .35 *
-    Math.sin(mx / window.innerWidth * Math.PI) *
-    Math.sin(my / window.innerHeight * Math.PI);
-
-  requestAnimationFrame(animate);
-})();
+}();
 
 /* MODALS */
 const modalData={
@@ -417,4 +387,5 @@ document.querySelector('.os-modal-backdrop').onclick=()=>osModal.classList.remov
 
 </body>
 </html>
+
 
